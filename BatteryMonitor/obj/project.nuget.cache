@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "wb7vgGRa15w=",
+  "success": true,
+  "projectFilePath": "C:\\Dependencies\\BatteryMonitor\\BatteryMonitor.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\p\\.nuget\\packages\\system.management\\10.0.5\\system.management.10.0.5.nupkg.sha512"
+  ],
+  "logs": []
+}
