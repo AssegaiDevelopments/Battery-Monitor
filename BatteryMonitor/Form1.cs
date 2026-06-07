@@ -1,8 +1,9 @@
 using System;
 using System.Drawing;
-using System.Windows.Forms;
+using System.IO;
+using System.Linq;
 using System.Management;
-using System.Linq; // FIX: needed for .Cast<>
+using System.Windows.Forms;
 
 namespace BatteryMonitor;
 
@@ -17,9 +18,12 @@ public partial class Form1 : Form
     public Form1()
     {
         InitializeComponent();
-        this.ShowInTaskbar = false;
 
-        // FIX: Initialize trayMenu BEFORE using it
+        // Prevent form from ever appearing
+        this.ShowInTaskbar = false;
+        this.WindowState = FormWindowState.Minimized;
+
+        // Initialize menu FIRST
         trayMenu = new ContextMenuStrip();
 
         powerPlanLabel = new ToolStripMenuItem("Power Plan: ...")
@@ -27,54 +31,37 @@ public partial class Form1 : Form
             Enabled = false
         };
 
+
+        trayMenu.Items.Add("Notification Test",null, NotificationTest);
         trayMenu.Items.Add(powerPlanLabel);
         trayMenu.Items.Add(new ToolStripSeparator());
         trayMenu.Items.Add("Power Plan Settings", null, OpenPowerSettings);
         trayMenu.Items.Add(new ToolStripSeparator());
         trayMenu.Items.Add("Exit", null, OnExit);
-        
+
         string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "icon.ico");
 
         trayIcon = new NotifyIcon
         {
-            Text = "Battery Monitor (80%)",
+            Text = "Battery Monitor",
             Icon = new Icon(iconPath),
             ContextMenuStrip = trayMenu,
             Visible = true
         };
 
-        CheckBattery();
-
         timer = new System.Windows.Forms.Timer
         {
-            Interval = 30000
+            Interval = 60000 // safer than 30s
         };
 
         timer.Tick += (s, e) => CheckBattery();
         timer.Start();
-
-        Application.ThreadException += (s, e) =>
-            {
-                MessageBox.Show(e.Exception.ToString(), "Thread Exception");
-            };
-
-            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
-            {
-                MessageBox.Show(e.ExceptionObject.ToString(), "Unhandled Exception");
-            };
     }
 
-    protected override void OnLoad(EventArgs e)
+    protected override void OnShown(EventArgs e)
     {
-            base.OnLoad(e);
-
-            ShowInTaskbar = false;
-            Hide();
-    }
-
-    protected override void SetVisibleCore(bool value)
-    {
-        base.SetVisibleCore(false);
+        base.OnShown(e);
+        Hide(); // ensure no blank window appears
     }
 
     private void OpenPowerSettings(object? sender, EventArgs e)
@@ -87,45 +74,66 @@ public partial class Form1 : Form
         });
     }
 
-    private void CheckBattery()
+    private void NotificationTest(object? sender, EventArgs e)
     {
-        try {
+        Notification();
+    }
+
+    private void Notification()
+    {
         var info = GetBatteryInfo();
 
         int level = info.level;
         bool charging = info.charging;
-
-        if (level >= 80 && charging && !notified)
-        {
-            MessageBox.Show(
-                $"Battery is at {level}%. Unplug charger.",
-                "Battery Alert",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning,
-                MessageBoxDefaultButton.Button1
-                //MessageBoxOptions.DefaultDesktopOnly ;disabled for testing
-            );
-
-            notified = true;
-        }
-
-        if (level < 80)
-        {
-            notified = false;
-        }
-
-        string plan = GetActivePowerPlan();
-        powerPlanLabel.Text = $"Power Plan: {plan}";
-        trayIcon.Text = $"Battery: {level}% | {plan}";
-
-         }
-    catch (Exception ex)
-    {
-        MessageBox.Show(
-            ex.ToString(),
-            "Battery Monitor Error"
-        );
+        string notificationText = $"Battery is at {level}%.\nPlease unplug the charger.";
+        const MessageBoxButtons buttons = MessageBoxButtons.OK;
+        const MessageBoxIcon messageBoxIcon = MessageBoxIcon.Warning;
+        this.TopMost = true;
+        DialogResult notification = MessageBox.Show(notificationText, "Notification Test", buttons, messageBoxIcon);
+        this.TopMost = false;
     }
+
+
+
+    private void CheckBattery()
+    {
+        try
+        {
+            var info = GetBatteryInfo();
+
+            int level = info.level;
+            bool charging = info.charging;
+
+            // FIX: reset condition more reliable
+            if (!charging || level < 80)
+                notified = false;
+
+            if (level >= 80 && charging && !notified)
+            {
+                trayIcon.ShowBalloonTip(
+                    5000,
+                    "Battery Alert",
+                    $"Battery is at {level}%. Consider unplugging charger.",
+                    ToolTipIcon.Warning
+                );
+                Notification();
+
+                notified = true;
+            }
+
+            string plan = GetActivePowerPlan();
+
+            powerPlanLabel.Text = $"Power Plan: {plan}";
+            trayIcon.Text = $"Battery: {level}%";
+
+            // safety: prevent tooltip crash
+            if (trayIcon.Text.Length > 63)
+                trayIcon.Text = trayIcon.Text[..63];// 0-63
+        }
+        catch
+        {
+            // swallow errors to prevent silent exit
+        }
     }
 
     private static (int level, bool charging) GetBatteryInfo()
@@ -137,9 +145,7 @@ public partial class Form1 : Form
             int level = Convert.ToInt32(obj["EstimatedChargeRemaining"]);
             int status = Convert.ToInt32(obj["BatteryStatus"]);
 
-            bool charging = (status == 2);
-
-            return (level, charging);
+            return (level, status == 2);
         }
 
         return (0, false);
@@ -158,7 +164,8 @@ public partial class Form1 : Form
 
         using var process = System.Diagnostics.Process.Start(psi);
 
-        if (process == null) return "Unknown"; // FIX: null safety
+        if (process == null)
+            return "Unknown";
 
         string output = process.StandardOutput.ReadToEnd();
         process.WaitForExit();
@@ -167,9 +174,7 @@ public partial class Form1 : Form
         int end = output.IndexOf(')');
 
         if (start != -1 && end != -1 && end > start)
-        {
             return output.Substring(start + 1, end - start - 1);
-        }
 
         return "Unknown";
     }

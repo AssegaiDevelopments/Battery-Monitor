@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Dependencies\\BatteryMonitor\\BatteryMonitor.csproj": {}
+    "C:\\dependencies\\BatteryMonitor\\BatteryMonitor.csproj": {}
   },
   "projects": {
-    "C:\\Dependencies\\BatteryMonitor\\BatteryMonitor.csproj": {
+    "C:\\dependencies\\BatteryMonitor\\BatteryMonitor.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Dependencies\\BatteryMonitor\\BatteryMonitor.csproj",
+        "projectUniqueName": "C:\\dependencies\\BatteryMonitor\\BatteryMonitor.csproj",
         "projectName": "BatteryMonitor",
-        "projectPath": "C:\\Dependencies\\BatteryMonitor\\BatteryMonitor.csproj",
+        "projectPath": "C:\\dependencies\\BatteryMonitor\\BatteryMonitor.csproj",
         "packagesPath": "C:\\Users\\p\\.nuget\\packages\\",
-        "outputPath": "C:\\Dependencies\\BatteryMonitor\\obj\\",
+        "outputPath": "C:\\dependencies\\BatteryMonitor\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\p\\AppData\\Roaming\\NuGet\\NuGet.Config"

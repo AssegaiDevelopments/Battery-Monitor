@@ -12,5 +12,8 @@ static class Program
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
         Application.Run(new Form1());
-    }    
+        Application.ThreadException += (s, e) => MessageBox.Show(e.Exception.ToString(), "Thread Exception");
+
+        AppDomain.CurrentDomain.UnhandledException += (s, e) => MessageBox.Show(e.ExceptionObject.ToString(), "Unhandled Exception");
+    }
 }
