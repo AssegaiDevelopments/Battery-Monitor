@@ -1,7 +1,0 @@
-C:\dependencies\BatteryMonitor\bin\Release\net10.0-windows\win-x64\publish\icon.ico
-C:\dependencies\BatteryMonitor\bin\Release\net10.0-windows\win-x64\publish\BatteryMonitor.exe
-C:\dependencies\BatteryMonitor\bin\Release\net10.0-windows\win-x64\publish\BatteryMonitor.dll
-C:\dependencies\BatteryMonitor\bin\Release\net10.0-windows\win-x64\publish\BatteryMonitor.deps.json
-C:\dependencies\BatteryMonitor\bin\Release\net10.0-windows\win-x64\publish\BatteryMonitor.runtimeconfig.json
-C:\dependencies\BatteryMonitor\bin\Release\net10.0-windows\win-x64\publish\BatteryMonitor.pdb
-C:\dependencies\BatteryMonitor\bin\Release\net10.0-windows\win-x64\publish\System.Management.dll
